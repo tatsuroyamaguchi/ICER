@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lynch症候群 CEA: IHC/BRAF Flow</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.65.0/build/stlite.css"
+  />
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@stlite/mountable@0.65.0/build/stlite.js"></script>
+  <script>
+    // GitHub Pages では同一オリジンから fetch できるため、
+    // app.py / cea_core.py を動的ロードして stlite に渡す
+    Promise.all([
+      fetch("./app.py").then(function(r) { return r.text(); }),
+      fetch("./cea_core.py").then(function(r) { return r.text(); })
+    ]).then(function(results) {
+      var appPy   = results[0];
+      var ceaCore = results[1];
+
+      stlite.mount(
+        {
+          requirements: [
+            "matplotlib",
+            "numpy",
+            "pandas",
+            "scipy"
+            // japanize_matplotlib は Pyodide 非対応のため除外
+            // graphviz は Pyodide で利用可能: 必要なら追加
+          ],
+          entrypoint: "app.py",
+          files: {
+            "app.py":      appPy,
+            "cea_core.py": ceaCore
+          }
+        },
+        document.getElementById("root")
+      );
+    }).catch(function(err) {
+      document.getElementById("root").innerHTML =
+        "<pre style='color:red;padding:2rem'>ファイルの読み込みに失敗しました。\n" +
+        "GitHub Pages の設定 (Settings → Pages → Source) を確認してください。\n\n" +
+        err + "</pre>";
+    });
+  </script>
+</body>
+</html>
